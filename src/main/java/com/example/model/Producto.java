@@ -1,5 +1,7 @@
 package com.example.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,87 +11,142 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "productos")
 public class Producto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String codigo;
-    private String nombre;
-    private String categoria;
-    private Double precio;
-    private Integer stock;
+    private Long productoId;
+    private Long negocioId;
+    private Long categoriaId;
+    private String codigoProducto;
+    private String nombreProducto;
+    private String descripcion;
+    private BigDecimal precioVenta;
+    private Long tipoItemId;
+    private boolean manejaInventario;
+    private boolean activo;
+	
 
-    // ===================
-    // Constructores
-    // ===================
     public Producto() {
     }
 
-    public Producto(String codigo, String nombre, String categoria, Double precio, Integer stock) {
-        this(null, codigo, nombre, categoria, precio, stock);
+    public Producto(Long negocioId, Long categoriaId, String codigoProducto, String nombreProducto, String descripcion, BigDecimal precioVenta, Long tipoItemId, boolean manejaInventario, boolean activo) {
+        this.negocioId = negocioId;
+        this.categoriaId = categoriaId;
+        this.codigoProducto = codigoProducto;
+        this.nombreProducto = nombreProducto;
+        this.descripcion = descripcion;
+        this.precioVenta = precioVenta;
+        this.tipoItemId = tipoItemId;
+        this.manejaInventario = manejaInventario;
+        this.activo = activo;
     }
 
-    public Producto(Long id, String codigo, String nombre, String categoria, Double precio, Integer stock) {
-        this.id = id;
-        this.codigo = codigo;
-        this.nombre = nombre;
-        this.categoria = categoria;
-        this.precio = precio;
-        this.stock = stock;
+    public Producto(Long productoId, Long negocioId, Long categoriaId, String codigoProducto, String nombreProducto, String descripcion, BigDecimal precioVenta, Long tipoItemId, boolean manejaInventario, boolean activo) {
+        this.productoId = productoId;
+        this.negocioId = negocioId;
+        this.categoriaId = categoriaId;
+        this.codigoProducto = codigoProducto;
+        this.nombreProducto = nombreProducto;
+        this.descripcion = descripcion;
+        this.precioVenta = precioVenta;
+        this.tipoItemId = tipoItemId;
+        this.manejaInventario = manejaInventario;
+        this.activo = activo;
     }
 
-    // ===================
-    // Getters y setters
-    // ===================
-    public Long getId() {
-        return id;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public String getCodigo() {
-        return codigo;
+    public Long getNegocioId() {
+        return negocioId;
     }
 
-    public void setCodigo(String codigo) {
-        this.codigo = codigo;
+    public void setNegocioId(Long negocioId) {
+        this.negocioId = negocioId;
     }
 
-    public String getNombre() {
-        return nombre;
+    public Long getCategoriaId() {
+        return categoriaId;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setCategoriaId(Long categoriaId) {
+        this.categoriaId = categoriaId;
     }
 
-    public String getCategoria() {
-        return categoria;
+    public String getCodigoProducto() {
+        return codigoProducto;
     }
 
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
+    public void setCodigoProducto(String codigoProducto) {
+        this.codigoProducto = codigoProducto;
     }
 
-    public Double getPrecio() {
-        return precio;
+    public String getNombreProducto() {
+        return nombreProducto;
     }
 
-    public void setPrecio(Double precio) {
-        this.precio = precio;
+    public void setNombreProducto(String nombreProducto) {
+        this.nombreProducto = nombreProducto;
     }
 
-    public Integer getStock() {
-        return stock;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setStock(Integer stock) {
-        this.stock = stock;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public BigDecimal getPrecioVenta() {
+        return precioVenta;
+    }
+
+    public void setPrecioVenta(BigDecimal precioVenta) {
+        this.precioVenta = precioVenta;
+    }
+
+    public Long getTipoItemId() {
+        return tipoItemId;
+    }
+
+    public void setTipoItemId(Long tipoItemId) {
+        this.tipoItemId = tipoItemId;
+    }
+
+    public boolean isManejaInventario() {
+        return manejaInventario;
+    }
+
+    public void setManejaInventario(boolean manejaInventario) {
+        this.manejaInventario = manejaInventario;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     @Override
     public String toString() {
-        return "Producto [id=" + id + ", codigo=" + codigo + ", nombre=" + nombre + ", stock=" + stock + "]";
+        return "Producto{" +
+                "productoId=" + productoId +
+                ", negocioId=" + negocioId +
+                ", categoriaId=" + categoriaId +
+                ", codigoProducto='" + codigoProducto + '\'' +
+                ", nombreProducto='" + nombreProducto + '\'' +
+                ", descripcion='" + descripcion + '\'' +
+                ", precioVenta=" + precioVenta +
+                ", tipoItemId=" + tipoItemId +
+                ", manejaInventario=" + manejaInventario +
+                ", activo=" + activo +
+                '}';
     }
 }
