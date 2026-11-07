@@ -2,11 +2,12 @@ package com.example;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-import javax.swing.plaf.metal.MetalBorders.TextFieldBorder;
+import java.util.UUID;
 
 import com.example.model.Clientes;
+import com.example.model.DetallesVenta;
 import com.example.model.Productos;
+import com.example.model.Ventas;
 import com.example.service.CrudService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -37,9 +38,9 @@ public class MainView extends VerticalLayout {
         TabSheet tabs = new TabSheet();
         tabs.setWidthFull();
         tabs.add("Productos", crearSeccionProductos());
-        tabs.add("Clientes", crearSeccionCategorias());
-        tabs.add("DetallesVenta", crearSeccionProveedores());
-        tabs.add("Ventas", crearSeccionUsuarios());
+        tabs.add("Clientes", crearSeccionClientes());
+        tabs.add("DetallesVenta", crearSeccionDetallesVenta());
+        tabs.add("Ventas", crearSeccionVentas());
 
         add(new H2("Sistema de Inventario - CRUD"), tabs);
     }
@@ -51,19 +52,19 @@ public class MainView extends VerticalLayout {
         VerticalLayout layout = new VerticalLayout();
         TextField productoIdField = new TextField("Producto ID");
         TextField negocioIdField = new TextField("Negocio ID");
-        TextField categoriaIdField = new TextField("categoria ID");
+        TextField categoriaIdField = new TextField("Categoría ID");
         TextField codigoProductoField = new TextField("Código Producto");
         TextField nombreProductoField = new TextField("Nombre Producto");
         TextField descripcionField = new TextField("Descripción");
         TextField precioVentaField = new TextField("Precio Venta");
         TextField tipoItemField = new TextField("Tipo Item ID");
-        TextField manejaInventarioField = new TextField("Maneja Inventario");
-        TextField activoField = new TextField("Activo");
+        TextField manejaInventarioField = new TextField("Maneja Inventario (1/0)");
+        TextField activoField = new TextField("Activo (1/0)");
 
         FormLayout form = new FormLayout(productoIdField, negocioIdField, categoriaIdField, codigoProductoField, nombreProductoField, descripcionField, precioVentaField, tipoItemField, manejaInventarioField, activoField);
 
         Grid<Productos> grid = new Grid<>(Productos.class, false);
-        grid.addColumn(Productos::getProductoId).setHeader("Id").setAutoWidth(true);
+        grid.addColumn(Productos::getProductoId).setHeader("ID").setAutoWidth(true);
         grid.addColumn(Productos::getNegocioId).setHeader("Negocio").setAutoWidth(true);
         grid.addColumn(Productos::getCategoriaId).setHeader("Categoría").setAutoWidth(true);
         grid.addColumn(Productos::getCodigoProducto).setHeader("Código").setAutoWidth(true);
@@ -81,15 +82,15 @@ public class MainView extends VerticalLayout {
             Productos p = e.getValue();
             if (p != null) {
                 productoIdField.setValue(p.getProductoId() != null ? p.getProductoId().toString() : "");
-                negocioIdField.setValue(p.getNegocioId() != null ? p.getNegocioId() .toString() : "");
-                categoriaIdField.setValue(p.getCategoriaId() != null ? p.getCategoriaId() .toString(): "");
+                negocioIdField.setValue(p.getNegocioId() != null ? p.getNegocioId().toString() : "");
+                categoriaIdField.setValue(p.getCategoriaId() != null ? p.getCategoriaId().toString() : "");
                 codigoProductoField.setValue(p.getCodigoProducto() != null ? p.getCodigoProducto() : "");
                 nombreProductoField.setValue(p.getNombreProducto() != null ? p.getNombreProducto() : "");
                 descripcionField.setValue(p.getDescripcion() != null ? p.getDescripcion() : "");
                 precioVentaField.setValue(p.getPrecioVenta() != null ? p.getPrecioVenta().toString() : "");
                 tipoItemField.setValue(p.getTipoItemId() != null ? p.getTipoItemId().toString() : "");
-                manejaInventarioField.setValue(p.isManejaInventario() ? String.valueOf(p.isManejaInventario()) : "");
-                activoField.setValue(p.isActivo() ? String.valueOf(p.isActivo()) : "");
+                manejaInventarioField.setValue(p.isManejaInventario() ? "1" : "0");
+                activoField.setValue(p.isActivo() ? "1" : "0");
             }
         });
 
@@ -145,13 +146,13 @@ public class MainView extends VerticalLayout {
         Button btnEliminar = new Button("Eliminar", e -> {
             crudService.eliminar(Productos.class, parseId(productoIdField));
             refrescar.run();
-            limpiar(productoIdField, codigoProductoField, nombreProductoField, categoriaIdField, precioVentaField, manejaInventarioField, activoField);
+            limpiar(productoIdField, negocioIdField, categoriaIdField, codigoProductoField, nombreProductoField, descripcionField, precioVentaField, tipoItemField, manejaInventarioField, activoField);
             Notification.show("Producto eliminado");
         });
         btnEliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         Button btnLimpiar = new Button("Limpiar", e -> {
-            limpiar(productoIdField, codigoProductoField, nombreProductoField, categoriaIdField, precioVentaField, manejaInventarioField, activoField);
+            limpiar(productoIdField, negocioIdField, categoriaIdField, codigoProductoField, nombreProductoField, descripcionField, precioVentaField, tipoItemField, manejaInventarioField, activoField);
             grid.asSingleSelect().clear();
         });
 
@@ -165,22 +166,23 @@ public class MainView extends VerticalLayout {
     private Component crearSeccionClientes() {
         VerticalLayout layout = new VerticalLayout();
         TextField clienteIdField = new TextField("ID");
-        TextField NegocioIdField = new TextField("Nombre");
-        TextField TipoDocumentoField = new TextField("Descripción");
-        TextField numeroDocumentoField = new TextField("Documento");
-        TextField nombreRazonSocialField = new TextField("Razon social");
-        TextField ActivoField = new TextField("Activo");
-        TextField EsGenericoField = new TextField("Es generico");
-        FormLayout form = new FormLayout(clienteIdField, NegocioIdField, TipoDocumentoField, TipoDocumentoField, numeroDocumentoField, nombreRazonSocialField, ActivoField);
+        TextField negocioIdField = new TextField("Negocio ID");
+        TextField tipoDocumentoField = new TextField("Tipo Documento");
+        TextField numeroDocumentoField = new TextField("Número Documento");
+        TextField nombreRazonSocialField = new TextField("Razón Social");
+        TextField activoField = new TextField("Activo (1/0)");
+        TextField esGenericoField = new TextField("Es Genérico (1/0)");
+
+        FormLayout form = new FormLayout(clienteIdField, negocioIdField, tipoDocumentoField, numeroDocumentoField, nombreRazonSocialField, activoField, esGenericoField);
 
         Grid<Clientes> grid = new Grid<>(Clientes.class, false);
         grid.addColumn(Clientes::getClienteId).setHeader("Cliente").setAutoWidth(true);
-        grid.addColumn(Clientes::getNegocioId).setHeader("negocio").setAutoWidth(true);
-        grid.addColumn(Clientes::getTipoDocumento).setHeader("Documento").setAutoWidth(true);
-        grid.addColumn(Clientes::getNumeroDocumento).setHeader("Numero Documento").setAutoWidth(true);
-        grid.addColumn(Clientes::getNombreRazonSocial).setHeader("Razon social").setAutoWidth(true);
+        grid.addColumn(Clientes::getNegocioId).setHeader("Negocio").setAutoWidth(true);
+        grid.addColumn(Clientes::getTipoDocumento).setHeader("Tipo Documento").setAutoWidth(true);
+        grid.addColumn(Clientes::getNumeroDocumento).setHeader("Número Documento").setAutoWidth(true);
+        grid.addColumn(Clientes::getNombreRazonSocial).setHeader("Razón Social").setAutoWidth(true);
         grid.addColumn(Clientes::getActivo).setHeader("Activo").setAutoWidth(true);
-        grid.addColumn(Clientes::getEsGenerico).setHeader("Es generico").setAutoWidth(true);
+        grid.addColumn(Clientes::getEsGenerico).setHeader("Es Genérico").setAutoWidth(true);
 
         Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Clientes.class));
         refrescar.run();
@@ -188,58 +190,69 @@ public class MainView extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(e -> {
             Clientes c = e.getValue();
             if (c != null) {
-                clienteIdField.setValue(c.getClienteId() != null ? c.getClienteId().toString() : "");
-                NegocioIdField.setValue(c.getNegocioId() != null ? c.getNegocioId().toString() : "");
-                TipoDocumentoField.setValue(c.getTipoDocumento() != null ? c.getDescripcion() : "");
-                numeroDocumentoField.setValue(c.getNumeroDocumento() !=null ? c.getNumeroDocumento(): "");
+                clienteIdField.setValue(String.valueOf(c.getClienteId()));
+                negocioIdField.setValue(String.valueOf(c.getNegocioId()));
+                tipoDocumentoField.setValue(c.getTipoDocumento() != null ? c.getTipoDocumento() : "");
+                numeroDocumentoField.setValue(c.getNumeroDocumento() != null ? c.getNumeroDocumento() : "");
                 nombreRazonSocialField.setValue(c.getNombreRazonSocial() != null ? c.getNombreRazonSocial() : "");
-                ActivoField.setValue(c.getActivo() ? String.valueOf (c.getActivo()) : "");
-                EsGenericoField.setValue(c.getEsGenerico() ? String.valueOf(c.getEsGenerico()) : "");
+                activoField.setValue(c.getActivo() ? "1" : "0");
+                esGenericoField.setValue(c.getEsGenerico() ? "1" : "0");
             }
         });
 
         Button btnCrear = new Button("Crear", e -> {
-            Categoria c = new Categoria(nombreField.getValue(), descripcionField.getValue());
+            Clientes c = new Clientes(
+                parseId(negocioIdField),
+                tipoDocumentoField.getValue(),
+                numeroDocumentoField.getValue(),
+                nombreRazonSocialField.getValue(),
+                parseInt(activoField.getValue()) == 1,
+                parseInt(esGenericoField.getValue()) == 1
+            );
             crudService.guardar(c);
             refrescar.run();
-            idField.setValue(c.getId() != null ? c.getId().toString() : "");
-            Notification.show("Categoría guardada con ID: " + c.getId());
+            clienteIdField.setValue(String.valueOf(c.getClienteId()));
+            Notification.show("Cliente guardado con ID: " + c.getClienteId());
         });
         btnCrear.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button btnConsultar = new Button("Consultar", e -> {
-            Categoria c = crudService.buscarPorId(Categoria.class, parseId(idField));
+            Clientes c = crudService.buscarPorId(Clientes.class, parseId(clienteIdField));
             if (c != null) {
                 grid.asSingleSelect().setValue(c);
-                Notification.show("Encontrada: " + c.getNombre());
+                Notification.show("Encontrado: " + c.getNombreRazonSocial());
             } else {
-                Notification.show("No encontrada");
+                Notification.show("No encontrado");
             }
         });
 
         Button btnActualizar = new Button("Actualizar", e -> {
-            Categoria c = crudService.buscarPorId(Categoria.class, parseId(idField));
+            Clientes c = crudService.buscarPorId(Clientes.class, parseId(clienteIdField));
             if (c != null) {
-                c.setNombre(nombreField.getValue());
-                c.setDescripcion(descripcionField.getValue());
+                c.setNegocioId(parseId(negocioIdField));
+                c.setTipoDocumento(tipoDocumentoField.getValue());
+                c.setNumeroDocumento(numeroDocumentoField.getValue());
+                c.setNombreRazonSocial(nombreRazonSocialField.getValue());
+                c.setActivo(parseInt(activoField.getValue()) == 1);
+                c.setEsGenerico(parseInt(esGenericoField.getValue()) == 1);
                 crudService.actualizar(c);
                 refrescar.run();
-                Notification.show("Categoría actualizada");
+                Notification.show("Cliente actualizado");
             } else {
                 Notification.show("ID no encontrado");
             }
         });
 
         Button btnEliminar = new Button("Eliminar", e -> {
-            crudService.eliminar(Categoria.class, parseId(idField));
+            crudService.eliminar(Clientes.class, parseId(clienteIdField));
             refrescar.run();
-            limpiar(idField, nombreField, descripcionField);
-            Notification.show("Categoría eliminada");
+            limpiar(clienteIdField, negocioIdField, tipoDocumentoField, numeroDocumentoField, nombreRazonSocialField, activoField, esGenericoField);
+            Notification.show("Cliente eliminado");
         });
         btnEliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         Button btnLimpiar = new Button("Limpiar", e -> {
-            limpiar(idField, nombreField, descripcionField);
+            limpiar(clienteIdField, negocioIdField, tipoDocumentoField, numeroDocumentoField, nombreRazonSocialField, activoField, esGenericoField);
             grid.asSingleSelect().clear();
         });
 
@@ -248,93 +261,97 @@ public class MainView extends VerticalLayout {
     }
 
     // ==========================================
-    // 3. PROVEEDORES
+    // 3. DETALLES VENTA
     // ==========================================
-    private Component crearSeccionProveedores() {
+    private Component crearSeccionDetallesVenta() {
         VerticalLayout layout = new VerticalLayout();
-        TextField idField = new TextField("ID");
-        TextField nombreField = new TextField("Nombre");
-        TextField contactoField = new TextField("Contacto");
-        TextField telefonoField = new TextField("Teléfono");
-        TextField emailField = new TextField("Email");
-        TextField direccionField = new TextField("Dirección");
+        TextField detalleVentaIdField = new TextField("ID");
+        TextField ventaIdField = new TextField("Venta ID");
+        TextField productoIdField = new TextField("Producto ID");
+        TextField cantidadField = new TextField("Cantidad");
+        TextField precioUnitarioField = new TextField("Precio Unitario");
+        TextField descripcionProductoField = new TextField("Descripción Producto");
+        TextField subtotalField = new TextField("Subtotal");
 
-        FormLayout form = new FormLayout(idField, nombreField, contactoField, telefonoField, emailField, direccionField);
+        FormLayout form = new FormLayout(detalleVentaIdField, ventaIdField, productoIdField, cantidadField, precioUnitarioField, descripcionProductoField, subtotalField);
 
-        Grid<Proveedor> grid = new Grid<>(Proveedor.class, false);
-        grid.addColumn(Proveedor::getId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(Proveedor::getNombre).setHeader("Nombre").setAutoWidth(true);
-        grid.addColumn(Proveedor::getContacto).setHeader("Contacto").setAutoWidth(true);
-        grid.addColumn(Proveedor::getTelefono).setHeader("Teléfono").setAutoWidth(true);
-        grid.addColumn(Proveedor::getEmail).setHeader("Email").setAutoWidth(true);
-        grid.addColumn(Proveedor::getDireccion).setHeader("Dirección").setAutoWidth(true);
+        Grid<DetallesVenta> grid = new Grid<>(DetallesVenta.class, false);
+        grid.addColumn(DetallesVenta::getDetalleVentaId).setHeader("ID").setAutoWidth(true);
+        grid.addColumn(DetallesVenta::getVentaId).setHeader("Venta ID").setAutoWidth(true);
+        grid.addColumn(DetallesVenta::getProductoId).setHeader("Producto ID").setAutoWidth(true);
+        grid.addColumn(DetallesVenta::getCantidad).setHeader("Cantidad").setAutoWidth(true);
+        grid.addColumn(DetallesVenta::getPrecioUnitario).setHeader("Precio Unitario").setAutoWidth(true);
+        grid.addColumn(DetallesVenta::getDescripcionProducto).setHeader("Descripción Producto").setAutoWidth(true);
+        grid.addColumn(DetallesVenta::getSubtotal).setHeader("Subtotal").setAutoWidth(true);
 
-        Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Proveedor.class));
+        Runnable refrescar = () -> grid.setItems(crudService.listarTodos(DetallesVenta.class));
         refrescar.run();
 
         grid.asSingleSelect().addValueChangeListener(e -> {
-            Proveedor p = e.getValue();
-            if (p != null) {
-                idField.setValue(p.getId() != null ? p.getId().toString() : "");
-                nombreField.setValue(p.getNombre() != null ? p.getNombre() : "");
-                contactoField.setValue(p.getContacto() != null ? p.getContacto() : "");
-                telefonoField.setValue(p.getTelefono() != null ? p.getTelefono() : "");
-                emailField.setValue(p.getEmail() != null ? p.getEmail() : "");
-                direccionField.setValue(p.getDireccion() != null ? p.getDireccion() : "");
+            DetallesVenta d = e.getValue();
+            if (d != null) {
+                detalleVentaIdField.setValue(String.valueOf(d.getDetalleVentaId()));
+                ventaIdField.setValue(String.valueOf(d.getVentaId()));
+                productoIdField.setValue(String.valueOf(d.getProductoId()));
+                cantidadField.setValue(String.valueOf(d.getCantidad()));
+                precioUnitarioField.setValue(String.valueOf(d.getPrecioUnitario()));
+                descripcionProductoField.setValue(d.getDescripcionProducto() != null ? d.getDescripcionProducto() : "");
+                subtotalField.setValue(String.valueOf(d.getSubtotal()));
             }
         });
 
         Button btnCrear = new Button("Crear", e -> {
-            Proveedor p = new Proveedor(
-                nombreField.getValue(),
-                contactoField.getValue(),
-                telefonoField.getValue(),
-                emailField.getValue(),
-                direccionField.getValue()
-            );
-            crudService.guardar(p);
+            DetallesVenta d = new DetallesVenta();
+            d.setVentaId(Long.parseLong(ventaIdField.getValue()));
+            d.setProductoId(Long.parseLong(productoIdField.getValue()));
+            d.setCantidad(Integer.parseInt(cantidadField.getValue()));
+            d.setPrecioUnitario(new BigDecimal(precioUnitarioField.getValue()));
+            d.setDescripcionProducto(descripcionProductoField.getValue());
+            d.setSubtotal(new BigDecimal(subtotalField.getValue()));
+            crudService.guardar(d);
             refrescar.run();
-            idField.setValue(p.getId() != null ? p.getId().toString() : "");
-            Notification.show("Proveedor guardado con ID: " + p.getId());
+            detalleVentaIdField.setValue(String.valueOf(d.getDetalleVentaId()));
+            Notification.show("Detalle de Venta guardado con ID: " + d.getDetalleVentaId());
         });
         btnCrear.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button btnConsultar = new Button("Consultar", e -> {
-            Proveedor p = crudService.buscarPorId(Proveedor.class, parseId(idField));
-            if (p != null) {
-                grid.asSingleSelect().setValue(p);
-                Notification.show("Encontrado: " + p.getNombre());
+            DetallesVenta d = crudService.buscarPorId(DetallesVenta.class, parseId(detalleVentaIdField));
+            if (d != null) {
+                grid.asSingleSelect().setValue(d);
+                Notification.show("Encontrado: " + d.getDescripcionProducto());
             } else {
                 Notification.show("No encontrado");
             }
         });
 
         Button btnActualizar = new Button("Actualizar", e -> {
-            Proveedor p = crudService.buscarPorId(Proveedor.class, parseId(idField));
-            if (p != null) {
-                p.setNombre(nombreField.getValue());
-                p.setContacto(contactoField.getValue());
-                p.setTelefono(telefonoField.getValue());
-                p.setEmail(emailField.getValue());
-                p.setDireccion(direccionField.getValue());
-                crudService.actualizar(p);
+            DetallesVenta d = crudService.buscarPorId(DetallesVenta.class, parseId(detalleVentaIdField));
+            if (d != null) {
+                d.setVentaId(Long.parseLong(ventaIdField.getValue()));
+                d.setProductoId(Long.parseLong(productoIdField.getValue()));
+                d.setCantidad(Integer.parseInt(cantidadField.getValue()));
+                d.setPrecioUnitario(new BigDecimal(precioUnitarioField.getValue()));
+                d.setDescripcionProducto(descripcionProductoField.getValue());
+                d.setSubtotal(new BigDecimal(subtotalField.getValue()));
+                crudService.actualizar(d);
                 refrescar.run();
-                Notification.show("Proveedor actualizado");
+                Notification.show("Detalle de Venta actualizado");
             } else {
                 Notification.show("ID no encontrado");
             }
         });
 
         Button btnEliminar = new Button("Eliminar", e -> {
-            crudService.eliminar(Proveedor.class, parseId(idField));
+            crudService.eliminar(DetallesVenta.class, parseId(detalleVentaIdField));
             refrescar.run();
-            limpiar(idField, nombreField, contactoField, telefonoField, emailField, direccionField);
-            Notification.show("Proveedor eliminado");
+            limpiar(detalleVentaIdField, ventaIdField, productoIdField, cantidadField, precioUnitarioField, descripcionProductoField, subtotalField);
+            Notification.show("Detalle de Venta eliminado");
         });
         btnEliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         Button btnLimpiar = new Button("Limpiar", e -> {
-            limpiar(idField, nombreField, contactoField, telefonoField, emailField, direccionField);
+            limpiar(detalleVentaIdField, ventaIdField, productoIdField, cantidadField, precioUnitarioField, descripcionProductoField, subtotalField);
             grid.asSingleSelect().clear();
         });
 
@@ -343,103 +360,116 @@ public class MainView extends VerticalLayout {
     }
 
     // ==========================================
-    // 4. USUARIOS
+    // 4. VENTAS
     // ==========================================
-    private Component crearSeccionUsuarios() {
+    private Component crearSeccionVentas() {
         VerticalLayout layout = new VerticalLayout();
-        TextField idField = new TextField("ID");
-        TextField nombreField = new TextField("Nombre");
-        TextField apellidoField = new TextField("Apellido");
-        TextField emailField = new TextField("Email");
-        TextField telefonoField = new TextField("Teléfono");
-        TextField direccionField = new TextField("Dirección");
-        TextField rolField = new TextField("Rol");
-        TextField estadoField = new TextField("Estado");
+        TextField ventaIdField = new TextField("ID");
+        TextField negocioIdField = new TextField("Negocio ID");
+        TextField clienteIdField = new TextField("Cliente ID");
+        TextField usuarioIdField = new TextField("Usuario ID");
+        TextField estadoVentaField = new TextField("Estado Venta");
+        TextField subtotalField = new TextField("Subtotal");
+        TextField descuentoTotalField = new TextField("Descuento Total");
+        TextField impuestoTotalField = new TextField("Impuesto Total");
+        TextField totalVentaField = new TextField("Total Venta");
+        TextField origenIdField = new TextField("Origen ID");
 
-        FormLayout form = new FormLayout(idField, nombreField, apellidoField, emailField, telefonoField, direccionField, rolField, estadoField);
+        FormLayout form = new FormLayout(ventaIdField, negocioIdField, clienteIdField, usuarioIdField, estadoVentaField, subtotalField, descuentoTotalField, impuestoTotalField, totalVentaField, origenIdField);
 
-        Grid<Usuario> grid = new Grid<>(Usuario.class, false);
-        grid.addColumn(Usuario::getId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(Usuario::getNombre).setHeader("Nombre").setAutoWidth(true);
-        grid.addColumn(Usuario::getApellido).setHeader("Apellido").setAutoWidth(true);
-        grid.addColumn(Usuario::getEmail).setHeader("Email").setAutoWidth(true);
-        grid.addColumn(Usuario::getTelefono).setHeader("Teléfono").setAutoWidth(true);
-        grid.addColumn(Usuario::getRol).setHeader("Rol").setAutoWidth(true);
-        grid.addColumn(Usuario::getEstado).setHeader("Estado").setAutoWidth(true);
+        Grid<Ventas> grid = new Grid<>(Ventas.class, false);
+        grid.addColumn(Ventas::getVentaId).setHeader("ID").setAutoWidth(true);
+        grid.addColumn(Ventas::getUuidLocal).setHeader("UUID Local").setAutoWidth(true);
+        grid.addColumn(Ventas::getNegocioId).setHeader("Negocio ID").setAutoWidth(true);
+        grid.addColumn(Ventas::getClienteId).setHeader("Cliente ID").setAutoWidth(true);
+        grid.addColumn(Ventas::getUsuarioId).setHeader("Usuario ID").setAutoWidth(true);
+        grid.addColumn(Ventas::getFechaVenta).setHeader("Fecha Venta").setAutoWidth(true);
+        grid.addColumn(Ventas::getEstadoVenta).setHeader("Estado Venta").setAutoWidth(true);
+        grid.addColumn(Ventas::getSubtotal).setHeader("Subtotal").setAutoWidth(true);
+        grid.addColumn(Ventas::getDescuentoTotal).setHeader("Descuento Total").setAutoWidth(true);
+        grid.addColumn(Ventas::getImpuestoTotal).setHeader("Impuesto Total").setAutoWidth(true);
+        grid.addColumn(Ventas::getTotalVenta).setHeader("Total Venta").setAutoWidth(true);
+        grid.addColumn(Ventas::getOrigenId).setHeader("Origen ID").setAutoWidth(true);
 
-        Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Usuario.class));
+        Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Ventas.class));
         refrescar.run();
 
         grid.asSingleSelect().addValueChangeListener(e -> {
-            Usuario u = e.getValue();
-            if (u != null) {
-                idField.setValue(u.getId() != null ? u.getId().toString() : "");
-                nombreField.setValue(u.getNombre() != null ? u.getNombre() : "");
-                apellidoField.setValue(u.getApellido() != null ? u.getApellido() : "");
-                emailField.setValue(u.getEmail() != null ? u.getEmail() : "");
-                telefonoField.setValue(u.getTelefono() != null ? u.getTelefono() : "");
-                direccionField.setValue(u.getDireccion() != null ? u.getDireccion() : "");
-                rolField.setValue(u.getRol() != null ? u.getRol() : "");
-                estadoField.setValue(u.getEstado() != null ? u.getEstado() : "");
+            Ventas v = e.getValue();
+            if (v != null) {
+                ventaIdField.setValue(v.getVentaId() != null ? v.getVentaId().toString() : "");
+                negocioIdField.setValue(v.getNegocioId() != null ? v.getNegocioId().toString() : "");
+                clienteIdField.setValue(v.getClienteId() != null ? v.getClienteId().toString() : "");
+                usuarioIdField.setValue(v.getUsuarioId() != null ? v.getUsuarioId().toString() : "");
+                estadoVentaField.setValue(v.getEstadoVenta() != null ? v.getEstadoVenta() : "");
+                subtotalField.setValue(v.getSubtotal() != null ? v.getSubtotal().toString() : "");
+                descuentoTotalField.setValue(v.getDescuentoTotal() != null ? v.getDescuentoTotal().toString() : "");
+                impuestoTotalField.setValue(v.getImpuestoTotal() != null ? v.getImpuestoTotal().toString() : "");
+                totalVentaField.setValue(v.getTotalVenta() != null ? v.getTotalVenta().toString() : "");
+                origenIdField.setValue(v.getOrigenId() != null ? v.getOrigenId().toString() : "");
             }
         });
 
         Button btnCrear = new Button("Crear", e -> {
-            Usuario u = new Usuario(
-                nombreField.getValue(),
-                apellidoField.getValue(),
-                emailField.getValue(),
-                telefonoField.getValue(),
-                direccionField.getValue(),
-                rolField.getValue(),
-                estadoField.getValue(),
-                LocalDateTime.now()
-            );
-            crudService.guardar(u);
+            Ventas v = new Ventas();
+            v.setUuidLocal(UUID.randomUUID());
+            v.setFechaVenta(LocalDateTime.now());
+            v.setNegocioId(Long.parseLong(negocioIdField.getValue()));
+            v.setClienteId(Long.parseLong(clienteIdField.getValue()));
+            v.setUsuarioId(Long.parseLong(usuarioIdField.getValue()));
+            v.setEstadoVenta(estadoVentaField.getValue());
+            v.setSubtotal(new BigDecimal(subtotalField.getValue()));
+            v.setDescuentoTotal(new BigDecimal(descuentoTotalField.getValue()));
+            v.setImpuestoTotal(new BigDecimal(impuestoTotalField.getValue()));
+            v.setTotalVenta(new BigDecimal(totalVentaField.getValue()));
+            v.setOrigenId(Long.parseLong(origenIdField.getValue()));
+            crudService.guardar(v);
             refrescar.run();
-            idField.setValue(u.getId() != null ? u.getId().toString() : "");
-            Notification.show("Usuario guardado con ID: " + u.getId());
+            ventaIdField.setValue(v.getVentaId() != null ? v.getVentaId().toString() : "");
+            Notification.show("Venta guardada con ID: " + v.getVentaId());
         });
         btnCrear.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button btnConsultar = new Button("Consultar", e -> {
-            Usuario u = crudService.buscarPorId(Usuario.class, parseId(idField));
-            if (u != null) {
-                grid.asSingleSelect().setValue(u);
-                Notification.show("Encontrado: " + u.getNombre() + " " + u.getApellido());
+            Ventas v = crudService.buscarPorId(Ventas.class, parseId(ventaIdField));
+            if (v != null) {
+                grid.asSingleSelect().setValue(v);
+                Notification.show("Encontrado: venta " + v.getVentaId());
             } else {
                 Notification.show("No encontrado");
             }
         });
 
         Button btnActualizar = new Button("Actualizar", e -> {
-            Usuario u = crudService.buscarPorId(Usuario.class, parseId(idField));
-            if (u != null) {
-                u.setNombre(nombreField.getValue());
-                u.setApellido(apellidoField.getValue());
-                u.setEmail(emailField.getValue());
-                u.setTelefono(telefonoField.getValue());
-                u.setDireccion(direccionField.getValue());
-                u.setRol(rolField.getValue());
-                u.setEstado(estadoField.getValue());
-                crudService.actualizar(u);
+            Ventas v = crudService.buscarPorId(Ventas.class, parseId(ventaIdField));
+            if (v != null) {
+                v.setNegocioId(Long.parseLong(negocioIdField.getValue()));
+                v.setClienteId(Long.parseLong(clienteIdField.getValue()));
+                v.setUsuarioId(Long.parseLong(usuarioIdField.getValue()));
+                v.setEstadoVenta(estadoVentaField.getValue());
+                v.setSubtotal(new BigDecimal(subtotalField.getValue()));
+                v.setDescuentoTotal(new BigDecimal(descuentoTotalField.getValue()));
+                v.setImpuestoTotal(new BigDecimal(impuestoTotalField.getValue()));
+                v.setTotalVenta(new BigDecimal(totalVentaField.getValue()));
+                v.setOrigenId(Long.parseLong(origenIdField.getValue()));
+                crudService.actualizar(v);
                 refrescar.run();
-                Notification.show("Usuario actualizado");
+                Notification.show("Venta actualizada");
             } else {
                 Notification.show("ID no encontrado");
             }
         });
 
         Button btnEliminar = new Button("Eliminar", e -> {
-            crudService.eliminar(Usuario.class, parseId(idField));
+            crudService.eliminar(Ventas.class, parseId(ventaIdField));
             refrescar.run();
-            limpiar(idField, nombreField, apellidoField, emailField, telefonoField, direccionField, rolField, estadoField);
-            Notification.show("Usuario eliminado");
+            limpiar(ventaIdField, negocioIdField, clienteIdField, usuarioIdField, estadoVentaField, subtotalField, descuentoTotalField, impuestoTotalField, totalVentaField, origenIdField);
+            Notification.show("Venta eliminada");
         });
         btnEliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         Button btnLimpiar = new Button("Limpiar", e -> {
-            limpiar(idField, nombreField, apellidoField, emailField, telefonoField, direccionField, rolField, estadoField);
+            limpiar(ventaIdField, negocioIdField, clienteIdField, usuarioIdField, estadoVentaField, subtotalField, descuentoTotalField, impuestoTotalField, totalVentaField, origenIdField);
             grid.asSingleSelect().clear();
         });
 

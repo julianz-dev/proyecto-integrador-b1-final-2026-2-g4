@@ -83,7 +83,7 @@ public class Clientes {
         this.nombreRazonSocial = nombreRazonSocial;
     }
 
-    public boolean isActivo() {
+    public boolean getActivo() {
         return activo;
     }
 
@@ -91,7 +91,7 @@ public class Clientes {
         this.activo = activo;
     }
 
-    public boolean isEsGenerico() {
+    public boolean getEsGenerico() {
         return esGenerico;
     }
 
