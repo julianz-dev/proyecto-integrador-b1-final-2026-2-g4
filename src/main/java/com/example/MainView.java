@@ -171,24 +171,22 @@ public class MainView extends VerticalLayout {
         TextField nombreRazonSocialField = new TextField("Razon social");
         TextField ActivoField = new TextField("Activo");
         TextField EsGenericoField = new TextField("Es generico");
-
-        TextField EsGenericoField = new TextField("Es generico");
         FormLayout form = new FormLayout(clienteIdField, NegocioIdField, TipoDocumentoField, TipoDocumentoField, numeroDocumentoField, nombreRazonSocialField, ActivoField);
 
-        Grid<Cliente> grid = new Grid<>(Clientes.class, false);
-        grid.addColumn(Categoria::getClienteId).setHeader("Cliente").setAutoWidth(true);
-        grid.addColumn(Categoria::getNegocioId).setHeader("negocio").setAutoWidth(true);
-        grid.addColumn(Categoria::getTipoDocumento).setHeader("Documento").setAutoWidth(true);
-        grid.addColumn(Categoria::getNumeroDocumento).setHeader("Numero Documento").setAutoWidth(true);
-        grid.addColumn(categoria::getNombreRazonSocial).setHeader("Razon social").setAutoWidth(true);
-        grid.addColumn(categoria::getActivo).setHeader("Activo").setAutoWidth(true);
-        grid.addColumn(Categoria::getEsGenerico).setHeader("Es generico").setAutoWidth(true);
+        Grid<Clientes> grid = new Grid<>(Clientes.class, false);
+        grid.addColumn(Clientes::getClienteId).setHeader("Cliente").setAutoWidth(true);
+        grid.addColumn(Clientes::getNegocioId).setHeader("negocio").setAutoWidth(true);
+        grid.addColumn(Clientes::getTipoDocumento).setHeader("Documento").setAutoWidth(true);
+        grid.addColumn(Clientes::getNumeroDocumento).setHeader("Numero Documento").setAutoWidth(true);
+        grid.addColumn(Clientes::getNombreRazonSocial).setHeader("Razon social").setAutoWidth(true);
+        grid.addColumn(Clientes::getActivo).setHeader("Activo").setAutoWidth(true);
+        grid.addColumn(Clientes::getEsGenerico).setHeader("Es generico").setAutoWidth(true);
 
         Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Clientes.class));
         refrescar.run();
 
         grid.asSingleSelect().addValueChangeListener(e -> {
-            Categoria c = e.getValue();
+            Clientes c = e.getValue();
             if (c != null) {
                 clienteIdField.setValue(c.getClienteId() != null ? c.getClienteId().toString() : "");
                 NegocioIdField.setValue(c.getNegocioId() != null ? c.getNegocioId().toString() : "");
