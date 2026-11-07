@@ -2,10 +2,7 @@ package com.example;
 
 import java.time.LocalDateTime;
 
-import com.example.model.Categoria;
 import com.example.model.Productos;
-import com.example.model.Proveedor;
-import com.example.model.Usuario;
 import com.example.service.CrudService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
