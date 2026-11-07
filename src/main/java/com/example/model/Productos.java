@@ -114,7 +114,7 @@ public class Productos {
         return tipoItemId;
     }
 
-    public void setTipoItemId(Long tipoItemId) {
+    public void setTipoItemId(long tipoItemId) {
         this.tipoItemId = tipoItemId;
     }
 

@@ -1,5 +1,6 @@
 package com.example;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.example.model.Productos;
@@ -33,9 +34,9 @@ public class MainView extends VerticalLayout {
         TabSheet tabs = new TabSheet();
         tabs.setWidthFull();
         tabs.add("Productos", crearSeccionProductos());
-        tabs.add("Categorías", crearSeccionCategorias());
-        tabs.add("Proveedores", crearSeccionProveedores());
-        tabs.add("Usuarios", crearSeccionUsuarios());
+        tabs.add("Clientes", crearSeccionCategorias());
+        tabs.add("DetallesVenta", crearSeccionProveedores());
+        tabs.add("Ventas", crearSeccionUsuarios());
 
         add(new H2("Sistema de Inventario - CRUD"), tabs);
     }
@@ -45,22 +46,30 @@ public class MainView extends VerticalLayout {
     // ==========================================
     private Component crearSeccionProductos() {
         VerticalLayout layout = new VerticalLayout();
-        TextField idField = new TextField("ID");
-        TextField codigoField = new TextField("Código");
-        TextField nombreField = new TextField("Nombre");
-        TextField categoriaField = new TextField("Categoría");
-        TextField precioField = new TextField("Precio");
-        TextField stockField = new TextField("Stock");
+        TextField productoIdField = new TextField("Producto ID");
+        TextField negocioIdField = new TextField("Negocio ID");
+        TextField categoriaIdField = new TextField("categoria ID");
+        TextField codigoProductoField = new TextField("Código Producto");
+        TextField nombreProductoField = new TextField("Nombre Producto");
+        TextField descripcionField = new TextField("Descripción");
+        TextField precioVentaField = new TextField("Precio Venta");
+        TextField tipoItemField = new TextField("Tipo Item ID");
+        TextField manejaInventarioField = new TextField("Maneja Inventario");
+        TextField activoField = new TextField("Activo");
 
-        FormLayout form = new FormLayout(idField, codigoField, nombreField, categoriaField, precioField, stockField);
+        FormLayout form = new FormLayout(productoIdField, negocioIdField, categoriaIdField, codigoProductoField, nombreProductoField, descripcionField, precioVentaField, tipoItemField, manejaInventarioField, activoField);
 
         Grid<Productos> grid = new Grid<>(Productos.class, false);
-        grid.addColumn(Productos::getId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(Productos::getCodigo).setHeader("Código").setAutoWidth(true);
-        grid.addColumn(Productos::getNombre).setHeader("Nombre").setAutoWidth(true);
-        grid.addColumn(Productos::getCategoria).setHeader("Categoría").setAutoWidth(true);
-        grid.addColumn(Productos::getPrecio).setHeader("Precio").setAutoWidth(true);
-        grid.addColumn(Productos::getStock).setHeader("Stock").setAutoWidth(true);
+        grid.addColumn(Productos::getProductoId).setHeader("Id").setAutoWidth(true);
+        grid.addColumn(Productos::getNegocioId).setHeader("Negocio").setAutoWidth(true);
+        grid.addColumn(Productos::getCategoriaId).setHeader("Categoría").setAutoWidth(true);
+        grid.addColumn(Productos::getCodigoProducto).setHeader("Código").setAutoWidth(true);
+        grid.addColumn(Productos::getNombreProducto).setHeader("Nombre").setAutoWidth(true);
+        grid.addColumn(Productos::getDescripcion).setHeader("Descripción").setAutoWidth(true);
+        grid.addColumn(Productos::getPrecioVenta).setHeader("Precio Venta").setAutoWidth(true);
+        grid.addColumn(Productos::getTipoItemId).setHeader("Tipo Item").setAutoWidth(true);
+        grid.addColumn(Productos::isManejaInventario).setHeader("Maneja Inventario").setAutoWidth(true);
+        grid.addColumn(Productos::isActivo).setHeader("Activo").setAutoWidth(true);
 
         Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Productos.class));
         refrescar.run();
@@ -68,48 +77,60 @@ public class MainView extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(e -> {
             Productos p = e.getValue();
             if (p != null) {
-                idField.setValue(p.getId() != null ? p.getId().toString() : "");
-                codigoField.setValue(p.getCodigo() != null ? p.getCodigo() : "");
-                nombreField.setValue(p.getNombre() != null ? p.getNombre() : "");
-                categoriaField.setValue(p.getCategoria() != null ? p.getCategoria() : "");
-                precioField.setValue(p.getPrecio() != null ? p.getPrecio().toString() : "");
-                stockField.setValue(p.getStock() != null ? p.getStock().toString() : "");
+                productoIdField.setValue(p.getProductoId() != null ? p.getProductoId().toString() : "");
+                negocioIdField.setValue(p.getNegocioId() != null ? p.getNegocioId() .toString() : "");
+                categoriaIdField.setValue(p.getCategoriaId() != null ? p.getCategoriaId() .toString(): "");
+                codigoProductoField.setValue(p.getCodigoProducto() != null ? p.getCodigoProducto() : "");
+                nombreProductoField.setValue(p.getNombreProducto() != null ? p.getNombreProducto() : "");
+                descripcionField.setValue(p.getDescripcion() != null ? p.getDescripcion() : "");
+                precioVentaField.setValue(p.getPrecioVenta() != null ? p.getPrecioVenta().toString() : "");
+                tipoItemField.setValue(p.getTipoItemId() != null ? p.getTipoItemId().toString() : "");
+                manejaInventarioField.setValue(p.isManejaInventario() ? String.valueOf(p.isManejaInventario()) : "");
+                activoField.setValue(p.isActivo() ? String.valueOf(p.isActivo()) : "");
             }
         });
 
         Button btnCrear = new Button("Crear", e -> {
             Productos p = new Productos(
-                codigoField.getValue(),
-                nombreField.getValue(),
-                categoriaField.getValue(),
-                parseDouble(precioField.getValue()),
-                parseInt(stockField.getValue())
+                parseId(negocioIdField),
+                parseId(categoriaIdField),
+                codigoProductoField.getValue(),
+                nombreProductoField.getValue(),
+                descripcionField.getValue(),
+                BigDecimal.valueOf(parseDouble(precioVentaField.getValue())),
+                parseId(tipoItemField),
+                parseInt(manejaInventarioField.getValue()) == 1,
+                parseInt(activoField.getValue()) == 1
             );
             crudService.guardar(p);
             refrescar.run();
-            idField.setValue(p.getId() != null ? p.getId().toString() : "");
-            Notification.show("Producto guardado con ID: " + p.getId());
+            productoIdField.setValue(p.getProductoId() != null ? p.getProductoId().toString() : "");
+            Notification.show("Producto guardado con ID: " + p.getProductoId());
         });
         btnCrear.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button btnConsultar = new Button("Consultar", e -> {
-            Productos p = crudService.buscarPorId(Productos.class, parseId(idField));
+            Productos p = crudService.buscarPorId(Productos.class, parseId(productoIdField));
             if (p != null) {
                 grid.asSingleSelect().setValue(p);
-                Notification.show("Encontrado: " + p.getNombre());
+                Notification.show("Encontrado: " + p.getNombreProducto());
             } else {
                 Notification.show("No encontrado");
             }
         });
 
         Button btnActualizar = new Button("Actualizar", e -> {
-            Productos p = crudService.buscarPorId(Productos.class, parseId(idField));
+            Productos p = crudService.buscarPorId(Productos.class, parseId(productoIdField));
             if (p != null) {
-                p.setCodigo(codigoField.getValue());
-                p.setNombre(nombreField.getValue());
-                p.setCategoria(categoriaField.getValue());
-                p.setPrecio(parseDouble(precioField.getValue()));
-                p.setStock(parseInt(stockField.getValue()));
+                p.setNegocioId(parseId(negocioIdField));
+                p.setCategoriaId(parseId(categoriaIdField));
+                p.setCodigoProducto(codigoProductoField.getValue());
+                p.setNombreProducto(nombreProductoField.getValue());
+                p.setDescripcion(descripcionField.getValue());
+                p.setPrecioVenta(BigDecimal.valueOf(parseDouble(precioVentaField.getValue())));
+                p.setTipoItemId(parseId(tipoItemField));
+                p.setManejaInventario(parseInt(manejaInventarioField.getValue()) == 1);
+                p.setActivo(parseInt(activoField.getValue()) == 1);
                 crudService.actualizar(p);
                 refrescar.run();
                 Notification.show("Producto actualizado");
@@ -119,15 +140,15 @@ public class MainView extends VerticalLayout {
         });
 
         Button btnEliminar = new Button("Eliminar", e -> {
-            crudService.eliminar(Productos.class, parseId(idField));
+            crudService.eliminar(Productos.class, parseId(productoIdField));
             refrescar.run();
-            limpiar(idField, codigoField, nombreField, categoriaField, precioField, stockField);
+            limpiar(productoIdField, codigoProductoField, nombreProductoField, categoriaIdField, precioVentaField, manejaInventarioField, activoField);
             Notification.show("Producto eliminado");
         });
         btnEliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         Button btnLimpiar = new Button("Limpiar", e -> {
-            limpiar(idField, codigoField, nombreField, categoriaField, precioField, stockField);
+            limpiar(productoIdField, codigoProductoField, nombreProductoField, categoriaIdField, precioVentaField, manejaInventarioField, activoField);
             grid.asSingleSelect().clear();
         });
 
