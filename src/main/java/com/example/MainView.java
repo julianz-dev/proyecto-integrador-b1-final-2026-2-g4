@@ -3,6 +3,9 @@ package com.example;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import javax.swing.plaf.metal.MetalBorders.TextFieldBorder;
+
+import com.example.model.Clientes;
 import com.example.model.Productos;
 import com.example.service.CrudService;
 import com.vaadin.flow.component.Component;
@@ -157,30 +160,43 @@ public class MainView extends VerticalLayout {
     }
 
     // ==========================================
-    // 2. CATEGORÍAS
+    // 2. CLIENTES
     // ==========================================
-    private Component crearSeccionCategorias() {
+    private Component crearSeccionClientes() {
         VerticalLayout layout = new VerticalLayout();
-        TextField idField = new TextField("ID");
-        TextField nombreField = new TextField("Nombre");
-        TextField descripcionField = new TextField("Descripción");
+        TextField clienteIdField = new TextField("ID");
+        TextField NegocioIdField = new TextField("Nombre");
+        TextField TipoDocumentoField = new TextField("Descripción");
+        TextField numeroDocumentoField = new TextField("Documento");
+        TextField nombreRazonSocialField = new TextField("Razon social");
+        TextField ActivoField = new TextField("Activo");
+        TextField EsGenericoField = new TextField("Es generico");
 
-        FormLayout form = new FormLayout(idField, nombreField, descripcionField);
+        TextField EsGenericoField = new TextField("Es generico");
+        FormLayout form = new FormLayout(clienteIdField, NegocioIdField, TipoDocumentoField, TipoDocumentoField, numeroDocumentoField, nombreRazonSocialField, ActivoField);
 
-        Grid<Categoria> grid = new Grid<>(Categoria.class, false);
-        grid.addColumn(Categoria::getId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(Categoria::getNombre).setHeader("Nombre").setAutoWidth(true);
-        grid.addColumn(Categoria::getDescripcion).setHeader("Descripción").setAutoWidth(true);
+        Grid<Cliente> grid = new Grid<>(Clientes.class, false);
+        grid.addColumn(Categoria::getClienteId).setHeader("Cliente").setAutoWidth(true);
+        grid.addColumn(Categoria::getNegocioId).setHeader("negocio").setAutoWidth(true);
+        grid.addColumn(Categoria::getTipoDocumento).setHeader("Documento").setAutoWidth(true);
+        grid.addColumn(Categoria::getNumeroDocumento).setHeader("Numero Documento").setAutoWidth(true);
+        grid.addColumn(categoria::getNombreRazonSocial).setHeader("Razon social").setAutoWidth(true);
+        grid.addColumn(categoria::getActivo).setHeader("Activo").setAutoWidth(true);
+        grid.addColumn(Categoria::getEsGenerico).setHeader("Es generico").setAutoWidth(true);
 
-        Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Categoria.class));
+        Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Clientes.class));
         refrescar.run();
 
         grid.asSingleSelect().addValueChangeListener(e -> {
             Categoria c = e.getValue();
             if (c != null) {
-                idField.setValue(c.getId() != null ? c.getId().toString() : "");
-                nombreField.setValue(c.getNombre() != null ? c.getNombre() : "");
-                descripcionField.setValue(c.getDescripcion() != null ? c.getDescripcion() : "");
+                clienteIdField.setValue(c.getClienteId() != null ? c.getClienteId().toString() : "");
+                NegocioIdField.setValue(c.getNegocioId() != null ? c.getNegocioId().toString() : "");
+                TipoDocumentoField.setValue(c.getTipoDocumento() != null ? c.getDescripcion() : "");
+                numeroDocumentoField.setValue(c.getNumeroDocumento() !=null ? c.getNumeroDocumento(): "");
+                nombreRazonSocialField.setValue(c.getNombreRazonSocial() != null ? c.getNombreRazonSocial() : "");
+                ActivoField.setValue(c.getActivo() ? String.valueOf (c.getActivo()) : "");
+                EsGenericoField.setValue(c.getEsGenerico() ? String.valueOf(c.getEsGenerico()) : "");
             }
         });
 
