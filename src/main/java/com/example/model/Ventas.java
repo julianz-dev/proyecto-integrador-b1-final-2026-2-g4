@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "ventas")
-public class Venta {
+public class Ventas {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ventaId;
@@ -28,10 +28,10 @@ public class Venta {
     private BigDecimal totalVenta;
     private Long origenId;
 
-    public Venta() {
+    public Ventas() {
     }
 
-    public Venta(UUID uuidLocal, Long negocioId, Long clienteId, Long usuarioId, LocalDateTime fechaVenta, String estadoVenta, BigDecimal subtotal, BigDecimal descuentoTotal, BigDecimal impuestoTotal, BigDecimal totalVenta, Long origenId) {
+    public Ventas(UUID uuidLocal, Long negocioId, Long clienteId, Long usuarioId, LocalDateTime fechaVenta, String estadoVenta, BigDecimal subtotal, BigDecimal descuentoTotal, BigDecimal impuestoTotal, BigDecimal totalVenta, Long origenId) {
         this.uuidLocal = uuidLocal;
         this.negocioId = negocioId;
         this.clienteId = clienteId;
@@ -45,7 +45,7 @@ public class Venta {
         this.origenId = origenId;
     }
 
-    public Venta(Long ventaId, UUID uuidLocal, Long negocioId, Long clienteId, Long usuarioId, LocalDateTime fechaVenta, String estadoVenta, BigDecimal subtotal, BigDecimal descuentoTotal, BigDecimal impuestoTotal, BigDecimal totalVenta, Long origenId) {
+    public Ventas(Long ventaId, UUID uuidLocal, Long negocioId, Long clienteId, Long usuarioId, LocalDateTime fechaVenta, String estadoVenta, BigDecimal subtotal, BigDecimal descuentoTotal, BigDecimal impuestoTotal, BigDecimal totalVenta, Long origenId) {
         this.ventaId = ventaId;
         this.uuidLocal = uuidLocal;
         this.negocioId = negocioId;

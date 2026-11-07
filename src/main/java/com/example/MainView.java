@@ -3,7 +3,7 @@ package com.example;
 import java.time.LocalDateTime;
 
 import com.example.model.Categoria;
-import com.example.model.Producto;
+import com.example.model.Productos;
 import com.example.model.Proveedor;
 import com.example.model.Usuario;
 import com.example.service.CrudService;
@@ -57,19 +57,19 @@ public class MainView extends VerticalLayout {
 
         FormLayout form = new FormLayout(idField, codigoField, nombreField, categoriaField, precioField, stockField);
 
-        Grid<Producto> grid = new Grid<>(Producto.class, false);
-        grid.addColumn(Producto::getId).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(Producto::getCodigo).setHeader("Código").setAutoWidth(true);
-        grid.addColumn(Producto::getNombre).setHeader("Nombre").setAutoWidth(true);
-        grid.addColumn(Producto::getCategoria).setHeader("Categoría").setAutoWidth(true);
-        grid.addColumn(Producto::getPrecio).setHeader("Precio").setAutoWidth(true);
-        grid.addColumn(Producto::getStock).setHeader("Stock").setAutoWidth(true);
+        Grid<Productos> grid = new Grid<>(Productos.class, false);
+        grid.addColumn(Productos::getId).setHeader("ID").setAutoWidth(true);
+        grid.addColumn(Productos::getCodigo).setHeader("Código").setAutoWidth(true);
+        grid.addColumn(Productos::getNombre).setHeader("Nombre").setAutoWidth(true);
+        grid.addColumn(Productos::getCategoria).setHeader("Categoría").setAutoWidth(true);
+        grid.addColumn(Productos::getPrecio).setHeader("Precio").setAutoWidth(true);
+        grid.addColumn(Productos::getStock).setHeader("Stock").setAutoWidth(true);
 
-        Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Producto.class));
+        Runnable refrescar = () -> grid.setItems(crudService.listarTodos(Productos.class));
         refrescar.run();
 
         grid.asSingleSelect().addValueChangeListener(e -> {
-            Producto p = e.getValue();
+            Productos p = e.getValue();
             if (p != null) {
                 idField.setValue(p.getId() != null ? p.getId().toString() : "");
                 codigoField.setValue(p.getCodigo() != null ? p.getCodigo() : "");
@@ -81,7 +81,7 @@ public class MainView extends VerticalLayout {
         });
 
         Button btnCrear = new Button("Crear", e -> {
-            Producto p = new Producto(
+            Productos p = new Productos(
                 codigoField.getValue(),
                 nombreField.getValue(),
                 categoriaField.getValue(),
@@ -96,7 +96,7 @@ public class MainView extends VerticalLayout {
         btnCrear.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button btnConsultar = new Button("Consultar", e -> {
-            Producto p = crudService.buscarPorId(Producto.class, parseId(idField));
+            Productos p = crudService.buscarPorId(Productos.class, parseId(idField));
             if (p != null) {
                 grid.asSingleSelect().setValue(p);
                 Notification.show("Encontrado: " + p.getNombre());
@@ -106,7 +106,7 @@ public class MainView extends VerticalLayout {
         });
 
         Button btnActualizar = new Button("Actualizar", e -> {
-            Producto p = crudService.buscarPorId(Producto.class, parseId(idField));
+            Productos p = crudService.buscarPorId(Productos.class, parseId(idField));
             if (p != null) {
                 p.setCodigo(codigoField.getValue());
                 p.setNombre(nombreField.getValue());
@@ -122,7 +122,7 @@ public class MainView extends VerticalLayout {
         });
 
         Button btnEliminar = new Button("Eliminar", e -> {
-            crudService.eliminar(Producto.class, parseId(idField));
+            crudService.eliminar(Productos.class, parseId(idField));
             refrescar.run();
             limpiar(idField, codigoField, nombreField, categoriaField, precioField, stockField);
             Notification.show("Producto eliminado");

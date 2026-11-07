@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "productos")
-public class Producto {
+public class Productos {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,10 +26,10 @@ public class Producto {
     private boolean activo;
 	
 
-    public Producto() {
+    public Productos() {
     }
 
-    public Producto(Long negocioId, Long categoriaId, String codigoProducto, String nombreProducto, String descripcion, BigDecimal precioVenta, Long tipoItemId, boolean manejaInventario, boolean activo) {
+    public Productos(Long negocioId, Long categoriaId, String codigoProducto, String nombreProducto, String descripcion, BigDecimal precioVenta, Long tipoItemId, boolean manejaInventario, boolean activo) {
         this.negocioId = negocioId;
         this.categoriaId = categoriaId;
         this.codigoProducto = codigoProducto;
@@ -41,7 +41,7 @@ public class Producto {
         this.activo = activo;
     }
 
-    public Producto(Long productoId, Long negocioId, Long categoriaId, String codigoProducto, String nombreProducto, String descripcion, BigDecimal precioVenta, Long tipoItemId, boolean manejaInventario, boolean activo) {
+    public Productos(Long productoId, Long negocioId, Long categoriaId, String codigoProducto, String nombreProducto, String descripcion, BigDecimal precioVenta, Long tipoItemId, boolean manejaInventario, boolean activo) {
         this.productoId = productoId;
         this.negocioId = negocioId;
         this.categoriaId = categoriaId;

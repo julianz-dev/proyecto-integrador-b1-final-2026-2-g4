@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "clientes")
 
-public class Cliente {
+public class Clientes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long clienteId;
@@ -21,10 +21,10 @@ public class Cliente {
     private boolean esGenerico;
 
 
-    public Cliente() {
+    public Clientes() {
     }
 
-    public Cliente(long negocioId, String tipoDocumento, String numeroDocumento, String nombreRazonSocial, boolean activo, boolean esGenerico) {
+    public Clientes(long negocioId, String tipoDocumento, String numeroDocumento, String nombreRazonSocial, boolean activo, boolean esGenerico) {
         this.negocioId = negocioId;
         this.tipoDocumento = tipoDocumento;
         this.numeroDocumento = numeroDocumento;
@@ -33,7 +33,7 @@ public class Cliente {
         this.esGenerico = esGenerico;
     }
 
-    public Cliente(long clienteId, long negocioId, String tipoDocumento, String numeroDocumento, String nombreRazonSocial, boolean activo, boolean esGenerico) {
+    public Clientes(long clienteId, long negocioId, String tipoDocumento, String numeroDocumento, String nombreRazonSocial, boolean activo, boolean esGenerico) {
         this.clienteId = clienteId;
         this.negocioId = negocioId;
         this.tipoDocumento = tipoDocumento;
