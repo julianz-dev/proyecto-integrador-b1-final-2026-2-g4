@@ -86,7 +86,7 @@ flowchart TD
 
 El siguiente diagrama representa las cuatro entidades JPA incluidas en el proyecto y las tres claves foráneas verificadas en Neon. Los tipos que aparecen en las tablas del diagrama corresponden a los tipos Java de las entidades.
 
-![Diagrama entidad-relación de Facturate](./docs/images/modelo-er-facturate.png)
+![Diagrama entidad-relación de Facturate](./modelo-er-facturate.png)
 
 ### Entidades y relaciones
 
