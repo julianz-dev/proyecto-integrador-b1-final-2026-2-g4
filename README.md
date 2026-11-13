@@ -21,6 +21,7 @@
 
 - [Resumen ejecutivo](#resumen-ejecutivo)
 - [Funcionalidades](#funcionalidades)
+- [Comprobantes PDF](#comprobantes-pdf)
 - [Arquitectura](#arquitectura)
 - [Modelo de datos](#modelo-de-datos)
 - [Stack tecnológico](#stack-tecnológico)
@@ -57,8 +58,24 @@ El valor del prototipo está en centralizar el catálogo, los clientes y los reg
 | **Grillas** | Mostrar registros y cargar sus datos en el formulario al seleccionar una fila. |
 | **Controles de formulario** | Campos de solo lectura para identificadores generados; campos numéricos para IDs; `TextArea` para la descripción de productos; selectores para valores booleanos y tipo de documento. |
 | **Validaciones puntuales** | Comprobar que se seleccionen los valores obligatorios de los controles `Select` antes de crear o actualizar productos y clientes. |
+| **Comprobantes PDF** | Generar y descargar un comprobante de venta en PDF a partir de una venta seleccionada, con información del cliente, productos, cantidades e importes. |
 
 En el selector de tipo de documento de clientes se manejan los códigos `CC`, `CE`, `NIT` y `PAS`. Los campos booleanos se presentan visualmente como **SI/NO**.
+
+## Comprobantes PDF
+
+El módulo **Ventas** incorpora un enlace para descargar un comprobante PDF de la venta seleccionada. La generación está encapsulada en `FacturaPdfService.java`, un servicio Spring que consulta la venta, el cliente asociado y sus detalles mediante `EntityManager` y JPQL.
+
+El servicio construye una plantilla HTML con estilos CSS y la convierte a PDF mediante **OpenHTMLtoPDF**. El documento contiene:
+
+- Identificador, UUID, fecha y estado de la venta.
+- Nombre o razón social y documento del cliente.
+- Descripción de los productos, cantidad, precio unitario y subtotal por línea.
+- Subtotal general, descuento, impuestos y total de la venta.
+
+El formato de página configurado es **8,5 × 13 pulgadas (media carta)** y los importes se presentan con formato de moneda colombiana (`es-CO`, COP). Desde la pestaña Ventas, selecciona una fila y utiliza el enlace **Descargar factura PDF**. El archivo se entrega con el nombre `factura-<ventaId>.pdf`.
+
+> **Alcance del documento:** el PDF es un comprobante de demostración académica generado con los datos almacenados en Facturate. No es una factura electrónica validada, autorizada ni transmitida a la DIAN.
 
 ## Arquitectura
 
@@ -67,11 +84,17 @@ El proyecto utiliza una arquitectura por capas simplificada. La vista Vaadin rec
 ```mermaid
 flowchart TD
     A[Usuario / navegador web] --> B[Vaadin Flow - MainView]
-    B -->|Inyección de dependencias| C[CrudService]
+    B -->|CRUD| C[CrudService]
     C -->|EntityManager / JPA| D[Hibernate ORM]
     D -->|JDBC PostgreSQL| E[(PostgreSQL en Neon)]
-    B --- F[Formularios, pestañas, grillas y notificaciones]
-    C --- G[CRUD genérico: persist, find, JPQL, merge y remove]
+    B -->|Solicitar comprobante| F[FacturaPdfService]
+    F -->|EntityManager / JPQL| D
+    F --> G[Plantilla HTML + CSS]
+    G --> H[OpenHTMLtoPDF]
+    H --> I[Documento PDF]
+    I -->|Descarga| A
+    B --- J[Formularios, pestañas, grillas y notificaciones]
+    C --- K[CRUD genérico: persist, find, JPQL, merge y remove]
 ```
 
 ### Componentes principales
@@ -79,6 +102,7 @@ flowchart TD
 - **`Application.java`**: punto de entrada de Spring Boot. Configura el shell de Vaadin, el tema Aura, la hoja de estilos y la comunicación Push.
 - **`MainView.java`**: vista principal (`@Route("")`). Organiza los cuatro módulos en un `TabSheet` y gestiona los formularios, grillas, eventos y notificaciones.
 - **`CrudService.java`**: servicio Spring transaccional que utiliza `EntityManager` para guardar, buscar, listar, actualizar y eliminar entidades. No se crean interfaces Repository independientes para cada entidad.
+- **`FacturaPdfService.java`**: servicio Spring que consulta la venta, el cliente y los detalles asociados; construye el HTML del comprobante y lo convierte a PDF mediante OpenHTMLtoPDF.
 - **`model/`**: contiene las cuatro entidades JPA que representan las tablas principales.
 - **PostgreSQL / Neon**: almacena los registros y aplica las restricciones de integridad referencial configuradas en el esquema `public`.
 
@@ -107,7 +131,6 @@ Las siguientes restricciones `FOREIGN KEY` fueron creadas y verificadas en la ba
 
 **Nota de implementación:** las entidades Java representan los IDs relacionados como atributos escalares (`Long` o `long`); en el código revisado no están declaradas asociaciones JPA `@ManyToOne`/`@OneToMany`. Las claves foráneas anteriores están definidas en PostgreSQL. Los campos `negocio_id`, `categoria_id`, `tipo_item_id`, `usuario_id` y `origen_id` se manejan como IDs escalares y no forman parte de las tres relaciones FK documentadas en este alcance.
 
-> El SVG `modelo_er_facturate_simulador_ventas.svg` que acompaña al código fuente corresponde a un diagrama anterior y no coincide completamente con las entidades JPA actuales. Para la entrega vigente, utiliza el PNG actualizado enlazado en esta sección.
 
 ### SQL para configurar las claves foráneas en una base nueva
 
@@ -164,6 +187,7 @@ Las versiones principales se obtuvieron del `pom.xml` del proyecto. Las versione
 | Hibernate ORM | Gestionada por Spring Boot; el log de ejecución compartido reportó 7.4.5.Final | Implementación ORM de JPA. |
 | PostgreSQL JDBC | Versión gestionada por Spring Boot | Conectividad JDBC con PostgreSQL. |
 | PostgreSQL | Instancia Neon; el log de ejecución compartido reportó 18.6 | Base de datos relacional. |
+| OpenHTMLtoPDF | 1.1.110 | Convierte la plantilla HTML/CSS del comprobante de venta a PDF. |
 | Maven | Según instalación local | Gestión de dependencias, ejecución y empaquetado. |
 | Docker | Dockerfile incluido | Construcción de imagen de contenedor; requiere completar/verificar el Maven Wrapper. |
 
@@ -176,6 +200,9 @@ Las versiones principales se obtuvieron del `pom.xml` del proyecto. Las versione
 - `org.postgresql:postgresql` (runtime)
 - `org.springframework.boot:spring-boot-starter-test` (test)
 - `com.vaadin:browserless-test-spring` (test)
+- `io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.110` (generación de comprobantes PDF).
+
+La dependencia adicional utilizada para generar comprobantes PDF se declara explícitamente en el `pom.xml`: `io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.110`.
 
 ## Estructura del proyecto
 
@@ -189,9 +216,7 @@ proyecto-integrador-b1-final-2026-2-g4/
 │   ├── 04_SERVICIO_CRUD_CON_HIBERNATE.md
 │   ├── 05_INTERFAZ_GRAFICA_MAINVIEW.md
 │   ├── 06_EJECUCION_Y_PRUEBAS.md
-│   ├── 07_GUIA_ADAPTACION_NUEVAS_IDEAS_DE_NEGOCIO.md
-│   └── images/
-│       └── modelo-er-facturate.png
+│   └── 07_GUIA_ADAPTACION_NUEVAS_IDEAS_DE_NEGOCIO.md
 ├── src/
 │   └── main/
 │       ├── java/com/example/
@@ -203,16 +228,18 @@ proyecto-integrador-b1-final-2026-2-g4/
 │       │   │   ├── Ventas.java
 │       │   │   └── DetallesVenta.java
 │       │   └── service/
-│       │       └── CrudService.java
+│       │       ├── CrudService.java
+│       │       └── FacturaPdfService.java
 │       └── resources/
 │           ├── application.properties
 │           └── META-INF/resources/styles.css
+├── modelo-er-facturate.png
 ├── Dockerfile
 ├── LICENSE.md
+├── README.md
 ├── pom.xml
 ├── mvnw
-├── mvnw.cmd
-└── README.md
+└── mvnw.cmd
 ```
 
 Los archivos Markdown heredados de `docs/` incluyen material de guía y ejemplos del scaffold inicial; algunos apartados conservan referencias a entidades o escenarios anteriores. Deben revisarse antes de considerarlos documentación normativa del sistema actual. Para el modelo vigente, la referencia es el código de `model/` y el diagrama ER incluido en este README.
@@ -367,14 +394,19 @@ Antes de integrar una rama, revisa los cambios, confirma que el proyecto compile
 
 La revisión del código confirma que el POM incluye dependencias para pruebas (`spring-boot-starter-test` y `browserless-test-spring`). Sin embargo, el ZIP revisado no contiene archivos de prueba dentro de `src/test`; por tanto, este README no declara una suite automatizada como existente ni afirma cobertura de pruebas.
 
-Validaciones funcionales recomendadas para cada entrega:
+Validaciones funcionales realizadas y recomendadas:
 
+- **Compilación:** `mvn compile` finalizó con `BUILD SUCCESS` después de incorporar las dependencias y la clase `FacturaPdfService`.
+- **Comprobante PDF:** se generó y abrió correctamente `factura-1.pdf` desde la aplicación. La revisión manual confirmó los datos de venta y cliente, dos líneas de productos, los importes y el formato media carta.
 - Crear un registro y confirmar que PostgreSQL genere su clave primaria.
 - Consultar por ID y seleccionar una fila de la grilla.
 - Actualizar campos y comprobar el resultado en la grilla y en Neon.
 - Eliminar registros y confirmar que las claves foráneas impidan borrar registros que tengan dependencias.
 - Comprobar que los IDs referenciados existan y que los campos obligatorios estén diligenciados.
 - Probar el comportamiento de UUID y fecha automática al crear una venta.
+- Seleccionar una venta y descargar su comprobante PDF; comparar los datos del documento con la información de Neon.
+
+El proyecto tampoco incluye actualmente una suite de pruebas automatizadas dentro de `src/test`.
 
 ## Licencia y créditos
 
