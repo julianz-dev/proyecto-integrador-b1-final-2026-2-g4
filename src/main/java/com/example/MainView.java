@@ -3,7 +3,12 @@ package com.example;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.io.ByteArrayInputStream;
 
+import com.example.service.FacturaPdfService;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.example.model.Clientes;
 import com.example.model.DetallesVenta;
 import com.example.model.Productos;
@@ -32,9 +37,11 @@ import com.vaadin.flow.component.textfield.TextArea;
 public class MainView extends VerticalLayout {
 
     private final CrudService crudService;
+    private final FacturaPdfService facturaPdfService;
 
-    public MainView(CrudService crudService) {
+    public MainView(CrudService crudService, FacturaPdfService facturaPdfService) {
         this.crudService = crudService;
+        this.facturaPdfService = facturaPdfService;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -577,7 +584,45 @@ public class MainView extends VerticalLayout {
             grid.asSingleSelect().clear();
         });
 
-        layout.add(form, crearAcciones(btnCrear, btnConsultar, btnActualizar, btnEliminar, btnLimpiar), grid);
+        Anchor descargarFacturaLink = new Anchor(
+                DownloadHandler.fromInputStream(event -> {
+
+                    Long ventaId = parseId(ventaIdField);
+
+                    if (ventaId == null) {
+                        return DownloadResponse.error(400);
+                    }
+
+                    try {
+                        byte[] pdf = facturaPdfService.generarFactura(ventaId);
+
+                        return new DownloadResponse(
+                                new ByteArrayInputStream(pdf),
+                                "factura-" + ventaId + ".pdf",
+                                "application/pdf",
+                                pdf.length);
+
+                    } catch (IllegalArgumentException ex) {
+                        return DownloadResponse.error(404);
+
+                    } catch (Exception ex) {
+                        return DownloadResponse.error(500);
+                    }
+
+                }),
+                "Descargar factura PDF");
+
+        HorizontalLayout acciones = crearAcciones(
+                btnCrear,
+                btnConsultar,
+                btnActualizar,
+                btnEliminar,
+                btnLimpiar);
+
+        acciones.add(descargarFacturaLink);
+
+        layout.add(form, acciones, grid);
+
         return layout;
     }
 
