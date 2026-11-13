@@ -449,11 +449,14 @@ public class MainView extends VerticalLayout {
         BigDecimalField usuarioIdField = new BigDecimalField("Usuario ID");
         TextField fechaVentaField = new TextField("Fecha Venta");
         fechaVentaField.setReadOnly(true);
-        TextField estadoVentaField = new TextField("Estado Venta");
-        TextField subtotalField = new TextField("Subtotal");
-        TextField descuentoTotalField = new TextField("Descuento Total");
-        TextField impuestoTotalField = new TextField("Impuesto Total");
-        TextField totalVentaField = new TextField("Total Venta");
+        Select<String> estadoVentaField = new Select<>();
+        estadoVentaField.setLabel("Estado Venta");
+        estadoVentaField.setItems("PAGADA", "PENDIENTE");
+        estadoVentaField.setRequiredIndicatorVisible(true);
+        BigDecimalField subtotalField = new BigDecimalField("Subtotal");
+        BigDecimalField descuentoTotalField = new BigDecimalField("Descuento Total");
+        BigDecimalField impuestoTotalField = new BigDecimalField("Impuesto Total");
+        BigDecimalField totalVentaField = new BigDecimalField("Total Venta");
         BigDecimalField origenIdField = new BigDecimalField("Origen ID");
 
         FormLayout form = new FormLayout(ventaIdField, uuidLocalField, fechaVentaField,
@@ -486,16 +489,25 @@ public class MainView extends VerticalLayout {
                 clienteIdField.setValue(v.getClienteId() != null ? BigDecimal.valueOf(v.getClienteId()) : null);
                 usuarioIdField.setValue(v.getUsuarioId() != null ? BigDecimal.valueOf(v.getUsuarioId()) : null);
                 fechaVentaField.setValue(v.getFechaVenta() != null ? v.getFechaVenta().toString() : "");
-                estadoVentaField.setValue(v.getEstadoVenta() != null ? v.getEstadoVenta() : "");
-                subtotalField.setValue(v.getSubtotal() != null ? v.getSubtotal().toString() : "");
-                descuentoTotalField.setValue(v.getDescuentoTotal() != null ? v.getDescuentoTotal().toString() : "");
-                impuestoTotalField.setValue(v.getImpuestoTotal() != null ? v.getImpuestoTotal().toString() : "");
-                totalVentaField.setValue(v.getTotalVenta() != null ? v.getTotalVenta().toString() : "");
+                estadoVentaField.setValue(v.getEstadoVenta());
+                subtotalField.setValue(v.getSubtotal());
+                descuentoTotalField.setValue(v.getDescuentoTotal());
+                impuestoTotalField.setValue(v.getImpuestoTotal());
+                totalVentaField.setValue(v.getTotalVenta());
                 origenIdField.setValue(v.getOrigenId() != null ? BigDecimal.valueOf(v.getOrigenId()) : null);
             }
         });
 
         Button btnCrear = new Button("Crear", e -> {
+            if (estadoVentaField.getValue() == null
+                    || subtotalField.getValue() == null
+                    || descuentoTotalField.getValue() == null
+                    || impuestoTotalField.getValue() == null
+                    || totalVentaField.getValue() == null) {
+
+                Notification.show("Completa el estado y todos los importes de la venta.");
+                return;
+            }
             Ventas v = new Ventas();
             v.setUuidLocal(UUID.randomUUID());
             v.setFechaVenta(LocalDateTime.now());
@@ -503,10 +515,10 @@ public class MainView extends VerticalLayout {
             v.setClienteId(parseId(clienteIdField));
             v.setUsuarioId(parseId(usuarioIdField));
             v.setEstadoVenta(estadoVentaField.getValue());
-            v.setSubtotal(new BigDecimal(subtotalField.getValue()));
-            v.setDescuentoTotal(new BigDecimal(descuentoTotalField.getValue()));
-            v.setImpuestoTotal(new BigDecimal(impuestoTotalField.getValue()));
-            v.setTotalVenta(new BigDecimal(totalVentaField.getValue()));
+            v.setSubtotal(subtotalField.getValue());
+            v.setDescuentoTotal(descuentoTotalField.getValue());
+            v.setImpuestoTotal(impuestoTotalField.getValue());
+            v.setTotalVenta(totalVentaField.getValue());
             v.setOrigenId(parseId(origenIdField));
             crudService.guardar(v);
             refrescar.run();
@@ -534,10 +546,10 @@ public class MainView extends VerticalLayout {
                 v.setClienteId(parseId(clienteIdField));
                 v.setUsuarioId(parseId(usuarioIdField));
                 v.setEstadoVenta(estadoVentaField.getValue());
-                v.setSubtotal(new BigDecimal(subtotalField.getValue()));
-                v.setDescuentoTotal(new BigDecimal(descuentoTotalField.getValue()));
-                v.setImpuestoTotal(new BigDecimal(impuestoTotalField.getValue()));
-                v.setTotalVenta(new BigDecimal(totalVentaField.getValue()));
+                v.setSubtotal(subtotalField.getValue());
+                v.setDescuentoTotal(descuentoTotalField.getValue());
+                v.setImpuestoTotal(impuestoTotalField.getValue());
+                v.setTotalVenta(totalVentaField.getValue());
                 v.setOrigenId(parseId(origenIdField));
                 crudService.actualizar(v);
                 refrescar.run();
