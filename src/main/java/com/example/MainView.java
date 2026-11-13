@@ -69,7 +69,8 @@ public class MainView extends VerticalLayout {
         TextField nombreProductoField = new TextField("Nombre Producto");
         TextArea descripcionField = new TextArea("Descripción");
         descripcionField.setMinRows(3);
-        TextField precioVentaField = new TextField("Precio Venta");
+        BigDecimalField precioVentaField = new BigDecimalField("Precio Venta");
+        precioVentaField.setRequiredIndicatorVisible(true);
         BigDecimalField tipoItemField = new BigDecimalField("Tipo Item ID");
         Select<Boolean> manejaInventarioField = new Select<>();
         manejaInventarioField.setLabel("Maneja Inventario");
@@ -114,7 +115,7 @@ public class MainView extends VerticalLayout {
                 codigoProductoField.setValue(p.getCodigoProducto() != null ? p.getCodigoProducto() : "");
                 nombreProductoField.setValue(p.getNombreProducto() != null ? p.getNombreProducto() : "");
                 descripcionField.setValue(p.getDescripcion() != null ? p.getDescripcion() : "");
-                precioVentaField.setValue(p.getPrecioVenta() != null ? p.getPrecioVenta().toString() : "");
+                precioVentaField.setValue(p.getPrecioVenta());
                 tipoItemField.setValue(p.getTipoItemId() != null ? BigDecimal.valueOf(p.getTipoItemId()) : null);
                 manejaInventarioField.setValue(p.isManejaInventario());
                 activoField.setValue(p.isActivo());
@@ -122,6 +123,11 @@ public class MainView extends VerticalLayout {
         });
 
         Button btnCrear = new Button("Crear", e -> {
+            if (precioVentaField.getValue() == null
+                    || precioVentaField.getValue().compareTo(BigDecimal.ZERO) < 0) {
+                Notification.show("Ingresa un precio de venta válido y no negativo.");
+                return;
+            }
             if (manejaInventarioField.getValue() == null || activoField.getValue() == null) {
                 Notification.show("Selecciona SI o NO en los campos obligatorios.");
                 return;
@@ -132,7 +138,7 @@ public class MainView extends VerticalLayout {
                     codigoProductoField.getValue(),
                     nombreProductoField.getValue(),
                     descripcionField.getValue(),
-                    BigDecimal.valueOf(parseDouble(precioVentaField.getValue())),
+                    precioVentaField.getValue(),
                     parseId(tipoItemField),
                     manejaInventarioField.getValue(),
                     activoField.getValue());
@@ -165,7 +171,7 @@ public class MainView extends VerticalLayout {
                 p.setCodigoProducto(codigoProductoField.getValue());
                 p.setNombreProducto(nombreProductoField.getValue());
                 p.setDescripcion(descripcionField.getValue());
-                p.setPrecioVenta(BigDecimal.valueOf(parseDouble(precioVentaField.getValue())));
+                p.setPrecioVenta(precioVentaField.getValue());
                 p.setTipoItemId(parseId(tipoItemField));
                 p.setManejaInventario(manejaInventarioField.getValue());
                 p.setActivo(activoField.getValue());
@@ -608,9 +614,12 @@ public class MainView extends VerticalLayout {
                     } catch (Exception ex) {
                         return DownloadResponse.error(500);
                     }
-
                 }),
-                "Descargar factura PDF");
+                "");
+
+        Button btnDescargarFactura = new Button("Descargar factura");
+
+        descargarFacturaLink.add(btnDescargarFactura);
 
         HorizontalLayout acciones = crearAcciones(
                 btnCrear,
